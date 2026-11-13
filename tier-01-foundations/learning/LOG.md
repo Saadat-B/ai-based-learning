@@ -39,3 +39,26 @@ Template for each finished stage:
   - A hand-written interface next to a schema drifts; infer the type from one source of truth (missing, then solid).
   - Startup vs lazy validation: describe the concrete deploy sequence (partial).
 - Interview line: "TypeScript checks types before the code runs, never real values, so I validate config with zod at startup: a missing variable crashes the deploy in the first second instead of breaking one endpoint days later. On SIGTERM the server stops taking connections, lets in-flight requests finish, and force-exits after a timeout shorter than the orchestrator's grace period."
+
+## 1.2 Tasks resource, in memory (2026-11-13)
+- Built: `src/tasks.ts`, an Express Router with an in-memory `Task[]` and all six routes: GET list, GET one, POST (201 + Location), PUT (full replace, all fields required), PATCH (only sent fields), DELETE (204, no body). `findTask` helper; `express.json()` and the router mounted in `app.ts`.
+- Decided:
+  - PUT on an unknown id returns 404, not create, because the server assigns ids; client-chosen ids would collide with `nextId`.
+  - Validate the body before looking up the id (400 before 404), the same order in PUT and PATCH, matching where validation middleware will sit in 1.4.
+  - In PATCH, `undefined` means "not sent, leave it", while a sent field must still be valid.
+  - POST takes only `title` from the body; `id` and `done` are set by the server.
+- Broke:
+  - DELETE twice: 204, then 404. The state is the same both times, so it's still idempotent.
+  - POST twice: two tasks (ids 1 and 2). PUT twice: same task, same state.
+  - PATCH /tasks/99: `{"done":true}` → 404; `{"done":"yes"}` → 400 (validation runs first).
+  - Predicted `PATCH {"done":true}` would fail on title; it didn't: absent (`undefined`) is not the same as empty (`""`).
+- Measured:
+  - 204 response carries no Content-Type, Content-Length or ETag.
+  - `Number()` on ids: `/tasks/01`, `/tasks/1.0`, `/tasks/0x1` all hit task 1; `/tasks/1abc` → NaN → 404. To fix in 1.4 (positive int param, 400).
+- Quiz gaps:
+  - Idempotent means the same server STATE, not the same response (missing at first). Idempotency-Keys are a separate tool that makes POST safe to retry.
+  - Who relies on idempotency: browsers (form resubmission prompt), retry libraries, Nginx retrying on another upstream; PATCH is treated as non-idempotent by Nginx by default (missing / partial).
+  - PUT vs PATCH: PUT's full replace removes cleared fields (edit forms); PATCH avoids lost updates from stale copies on another device (partial).
+  - The event loop stays alive while handles (listening server, sockets, timers) are open and exits when none remain; pm2 is unrelated (partial).
+  - OPEN from 1.1: a missing PORT still says "received NaN" instead of "required".
+- Interview line: "DELETE and PUT are idempotent because repeating them leaves the server in the same state even when the status code changes, so proxies and clients can retry them safely; POST isn't, so retries after a lost response create duplicates unless you add an Idempotency-Key."

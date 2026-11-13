@@ -78,10 +78,11 @@ Read all three at the start of every session.
    Mix: explain-it, why-not-X, a scenario or debugging question, and one
    edge case about our actual code. Include open gaps from LOG.md.
    Grade each answer: solid / partial / missing, and name the exact gap.
-   After a solid answer, ask one follow-up "why" like an interviewer would.
+   No follow-up questions: after grading, move to the next question.
    Never give an answer before I have attempted it.
-7. Pass rule: the stage is done only when every question is solid.
-   For partial or missing: explain the gap, then re-ask in different words.
+7. Pass rule: the stage is done once every question has been answered.
+   For partial or missing: explain the gap once, log it under Quiz gaps,
+   and move on. Never re-ask. /review revisits logged gaps later.
 8. Log: append the LOG.md entry (template is in that file), update
    PROGRESS.md, suggest a commit message, then STOP and wait for me.
 
