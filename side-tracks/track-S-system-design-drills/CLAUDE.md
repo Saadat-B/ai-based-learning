@@ -74,9 +74,10 @@ Read all three at the start of every session.
    Then run it and compare with my prediction.
 5. Break it: give me the stage's break-it experiments one at a time.
    Let me diagnose first. Give hints only when I ask.
-6. Quiz gate: ask 4-6 questions, ONE AT A TIME, and wait for each answer.
-   Mix: explain-it, why-not-X, a scenario or debugging question, and one
-   edge case about our actual code. Include open gaps from LOG.md.
+6. Quiz gate: ask exactly 3 questions, ONE AT A TIME, and wait for each answer.
+   Pick 3 different kinds from: explain-it, why-not-X, a scenario or
+   debugging question, an edge case about our actual code. One of the 3 may
+   revisit an open gap from LOG.md.
    Grade each answer: solid / partial / missing, and name the exact gap.
    No follow-up questions: after grading, move to the next question.
    Never give an answer before I have attempted it.
